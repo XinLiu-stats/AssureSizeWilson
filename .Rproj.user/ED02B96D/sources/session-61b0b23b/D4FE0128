@@ -1,0 +1,27 @@
+{
+    "id": "D4FE0128",
+    "path": "E:/SAMPLE/AssureSizeWilson/R/est_twosample.R",
+    "project_path": "R/est_twosample.R",
+    "type": "r_source",
+    "hash": "412370997",
+    "contents": "",
+    "dirty": false,
+    "created": 1736394673384.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "54,57",
+        "scrollLine": "38"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1736395915,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1736395915154,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,172 @@
+#' @title Sample Size Estimation for Two Independent Proportions
+#'
+#' @description
+#' This function estimates the required sample size for comparing two independent proportions
+#' based on the Wald method and the Wilson score method. It evaluates sample size performance
+#' using simulations to calculate empirical assurance probabilities and coverage probabilities.
+#'
+#' @param p1 Numeric. True proportion in group 1 (e.g., experimental group).
+#' @param p2 Numeric. True proportion in group 2 (e.g., control group).
+#' @param delta Numeric. The specified threshold for the lower limit of the confidence interval.
+#' @param r Numeric. Sample size allocation ratio (\code{n1 / n2}) between group 1 and group 2.
+#' @param alpha Numeric. Significance level for the two-sided confidence interval (default is 0.05).
+#' @param assurance Numeric. Desired assurance probability (e.g., 0.8 for 80% assurance).
+#' @param rep Integer. Number of simulation replications for evaluating assurance and coverage probabilities.
+#'
+#' @return A data frame with the following columns:
+#'   \describe{
+#'     \item{\code{n1_w, n2_w}}{Required sample sizes for group 1 and group 2 using the Wald method.}
+#'     \item{\code{n1_s, n2_s}}{Required sample sizes for group 1 and group 2 using the Wilson score method.}
+#'     \item{\code{EAPw}}{Empirical assurance probability (lower limit ≥ \code{delta}) using the Wald method.}
+#'     \item{\code{ECPw}}{Empirical coverage probability (true difference within CI) using the Wald method.}
+#'     \item{\code{EAPs}}{Empirical assurance probability using the Wilson score method.}
+#'     \item{\code{ECPs}}{Empirical coverage probability using the Wilson score method.}
+#'   }
+#'
+#' @details
+#' This function calculates the required sample sizes to ensure that the lower limit of a
+#' two-sided confidence interval for the difference in proportions (\code{p1 - p2}) is no less
+#' than the specified threshold (\code{delta}) with the desired assurance probability (\code{1 - beta}).
+#'
+#' \strong{Key Features:}
+#' \itemize{
+#'   \item The Wald method uses a standard normal approximation for the confidence interval.
+#'   \item The Wilson score method solves the sample size equation numerically using the
+#'         \code{uniroot} function for improved accuracy, particularly in small sample sizes
+#'         or extreme proportions.
+#'   \item Simulations evaluate the empirical assurance and coverage probabilities of the
+#'         calculated sample sizes.
+#' }
+#'
+#' Parallel computing is utilized to enhance performance for large simulation replications (\code{rep}).
+#'
+#' @examples
+#' # Example 1: Ensuring the lower limit of the 95% CI for (p1 - p2)
+#' # is no less than δ = -0.05 with 80% assurance and equal group sizes (r = 1)
+#' result <- est_twosample(p1 = 0.95, p2 = 0.9, delta = -0.05, r = 1,
+#'                         alpha = 0.05, assurance = 0.8, rep = 10000)
+#' print(result)
+#'
+#' # Example 2: Ensuring the lower limit of the 95% CI for (p1 - p2)
+#' # is no less than δ = -0.05 with 80% assurance and a group size ratio of r = 2
+#' result <- est_twosample(p1 = 0.95, p2 = 0.9, delta = -0.05, r = 2,
+#'                         alpha = 0.05, assurance = 0.8, rep = 10000)
+#' print(result)
+#'
+#' @note
+#' \itemize{
+#'   \item For extreme proportions (close to 0 or 1), the Wilson score method
+#'         is generally more reliable than the Wald method.
+#'   \item Ensure sufficient computational resources are available for large \code{rep} values
+#'         as parallel computing is used to improve performance.
+#' }
+#'
+#' @import doParallel
+#' @import DescTools
+#' @export
+
+
+est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
+  # Load necessary libraries
+  library(doParallel)
+  library(DescTools)
+  # Compute sample size for two proportions
+  compute_sample_size <- function(p1, p2, delta, alpha, assurance, r) {
+    d <- p1 - p2 - delta
+    z_alpha <- qnorm(1 - alpha / 2)
+    z_assurance <- qnorm(assurance)
+
+    # Wald method
+    var_p1 <- p1 * (1 - p1)
+    var_p2 <- p2 * (1 - p2)
+    n2_w <- ceiling(((var_p1 / r + var_p2) * (z_alpha + z_assurance)^2) / d^2)
+    n1_w <- ceiling(r * n2_w)
+
+    # Wilson score method (using uniroot for solving the equation)
+    wilson_eq <- function(n2, p1, p2, d, z_alpha, z_assurance, r) {
+      term1 <- ((z_alpha * (2 * p1 - 1) + sqrt(z_alpha^2 + 4 * r * n2 * p1 * (1 - p1))) /
+                  (2 * (r * n2 + z_alpha^2)))^2
+      term2 <- ((z_alpha * (1 - 2 * p2) + sqrt(z_alpha^2 + 4 * n2 * p2 * (1 - p2))) /
+                  (2 * (n2 + z_alpha^2)))^2
+      term1 + term2 - d^2 / (z_alpha + z_assurance)^2
+    }
+
+    n2_s <- ceiling(uniroot(wilson_eq, c(1, 1e6), p1 = p1, p2 = p2, d = d,
+                            z_alpha = z_alpha, z_assurance = z_assurance, r = r)$root)
+    n1_s <- ceiling(r * n2_s)
+
+    return(data.frame(n1_w, n2_w, n1_s, n2_s))
+  }
+
+  # Simulate confidence intervals
+  simulate_ci <- function(p1, p2, alpha, n1, n2, n1_s, n2_s) {
+    z_alpha <- qnorm(1 - alpha / 2)
+    pd <- p1 - p2
+
+    # Wald method
+    x1 <- rbinom(n1, 1, p1)
+    x2 <- rbinom(n2, 1, p2)
+    p1_hat <- mean(x1)
+    p2_hat <- mean(x2)
+    ml_w <- p1_hat - p2_hat - z_alpha * sqrt(p1_hat * (1 - p1_hat) / n1 + p2_hat * (1 - p2_hat) / n2)
+    mu_w <- p1_hat - p2_hat + z_alpha * sqrt(p1_hat * (1 - p1_hat) / n1 + p2_hat * (1 - p2_hat) / n2)
+
+    # Wilson method
+    x1_s <- rbinom(n1_s, 1, p1)
+    x2_s <- rbinom(n2_s, 1, p2)
+    p1_hat_s <- mean(x1_s)
+    p2_hat_s <- mean(x2_s)
+
+    # Wilson score limits
+    l1 <- (2 * n1_s * p1_hat_s + z_alpha^2 - z_alpha * sqrt(z_alpha^2 + 4 * n1_s * p1_hat_s * (1 - p1_hat_s))) /
+      (2 * (n1_s + z_alpha^2))
+    u1 <- (2 * n1_s * p1_hat_s + z_alpha^2 + z_alpha * sqrt(z_alpha^2 + 4 * n1_s * p1_hat_s * (1 - p1_hat_s))) /
+      (2 * (n1_s + z_alpha^2))
+
+    l2 <- (2 * n2_s * p2_hat_s + z_alpha^2 - z_alpha * sqrt(z_alpha^2 + 4 * n2_s * p2_hat_s * (1 - p2_hat_s))) /
+      (2 * (n2_s + z_alpha^2))
+    u2 <- (2 * n2_s * p2_hat_s + z_alpha^2 + z_alpha * sqrt(z_alpha^2 + 4 * n2_s * p2_hat_s * (1 - p2_hat_s))) /
+      (2 * (n2_s + z_alpha^2))
+
+    ml_s <- p1_hat_s - p2_hat_s - sqrt((p1_hat_s - l1)^2 + (u2 - p2_hat_s)^2)
+    mu_s <- p1_hat_s - p2_hat_s + sqrt((u1 - p1_hat_s)^2 + (p2_hat_s - l2)^2)
+
+    return(data.frame(ml_w, mu_w, ml_s, mu_s))
+  }
+
+  # Summarize simulation results
+  summarize_results <- function(p1, p2, delta, ci_data) {
+    pd <- p1 - p2
+    results <- data.frame(
+      EAPw = mean(ci_data$ml_w > delta),
+      ECPw = mean(ci_data$ml_w < pd & ci_data$mu_w > pd),
+      EAPs = mean(ci_data$ml_s > delta),
+      ECPs = mean(ci_data$ml_s < pd & ci_data$mu_s > pd)
+    )
+    return(results)
+  }
+
+  # Parameter grid
+  params <- expand.grid(r = r, delta = delta, p1 = p1, p2 = p2, assurance = assurance)
+  results <- list()
+
+  for (i in seq_len(nrow(params))) {
+    row <- params[i, ]
+    sample_sizes <- compute_sample_size(row$p1, row$p2, row$delta, alpha, row$assurance, row$r)
+
+    cl <- makeCluster(6)
+    registerDoParallel(cl)
+    ci_data <- foreach(j = seq_len(rep), .combine = rbind) %dopar% {
+      simulate_ci(row$p1, row$p2, alpha,
+                  sample_sizes$n1_w, sample_sizes$n2_w,
+                  sample_sizes$n1_s, sample_sizes$n2_s)
+    }
+    stopCluster(cl)
+
+    stats <- summarize_results(row$p1, row$p2, row$delta, ci_data)
+    results[[i]] <- cbind(row, sample_sizes, stats)
+  }
+
+  final_results <- do.call(rbind, results)
+  return(final_results)
+}
