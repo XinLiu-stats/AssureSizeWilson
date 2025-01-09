@@ -26,11 +26,11 @@ est_onesample(p, p0, alpha = 0.05, assurance = 0.8, rep = 10000)
 `rep`: Integer. The number of simulation replications to evaluate assurance and coverage probabilities. Must be a positive integer.
 
 ### Value
-`p0`: The input threshold proportion.
+`p0`: The input `p0`.
 
-`p`: The input true proportion.	
+`p`: The input `p`.	
 
-`assurance`: The desired assurance probability.	
+`assurance`: The input `assurance`.	
 
 `Nw`: Sample size estimated using the Wald method.
 
