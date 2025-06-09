@@ -132,7 +132,7 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
     h<-exact_sample(p = p,
                     p0 = p0,
                     alpha = alpha,
-                    assurance = beta,
+                    assurance = assurance,
                     n_range = 10:10000,
                     plot = FALSE)
     
