@@ -166,8 +166,9 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
 
     # Exact method
     x3 <- rbinom(Ne, 1, p)
-    l3 <- qbeta(alpha / 2, x3, Ne - x3 + 1)
-    u3 <- qbeta(1- alpha/2, x3 + 1, Ne - x3 )
+    k <- sum(x3)
+    l3 <- qbeta(alpha / 2, k, Ne - k + 1)
+    u3 <- qbeta(1- alpha/2, k + 1, Ne - k )
     return(c(l1 = l1, l2 = l2, l3 = l3, u1 = u1, u2 = u2, u3 = u3))
   }
 
