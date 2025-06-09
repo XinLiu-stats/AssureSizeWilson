@@ -25,20 +25,23 @@ A data frame with the following columns:
   \item \code{assurance}: The desired assurance probability.
   \item \code{Nw}: Sample size estimated using the Wald method.
   \item \code{Ns}: Sample size estimated using the Wilson score method.
+  \item \code{Ne}: Sample size estimated using the Exact method.
   \item \code{EAPw}: Empirical assurance probability for the Wald method (percentage).
   \item \code{EAPs}: Empirical assurance probability for the Wilson score method (percentage).
-  \item \code{CPw}: Confidence interval coverage probability for the Wald method (percentage).
-  \item \code{CPs}: Confidence interval coverage probability for the Wilson score method (percentage).
+  \item \code{EAPe}: Empirical assurance probability for the Exact method (percentage).
+  \item \code{ECPw}: Empirical coverage probability for the Wald method (percentage).
+  \item \code{ECPs}: Empirical coverage probability for the Wilson score method (percentage).
+  \item \code{ECPe}: Empirical coverage probability for the Exact method (percentage).
 }
 }
 \description{
-This function estimates the sample size required to ensure the lower bound of a confidence interval for a single proportion is no less than a specified threshold, with a desired level of assurance, using the Wald and Wilson score methods.
-It evaluates empirical assurance probabilities and confidence interval (CI) coverage probabilities through simulations.
+This function estimates the sample size required to ensure the lower bound of a confidence interval for a single proportion is no less than a specified threshold, with a desired level of assurance, using the Wald, Wilson score, and Exact methods.
+It evaluates empirical assurance probabilities and empirical coverage probabilities through simulations.
 }
 \details{
 The \code{est_onesample} function performs the following steps to estimate sample sizes and evaluate probabilities:
 \enumerate{
-  \item Computes sample sizes using both the Wald and Wilson score methods.
+  \item Computes sample sizes using both the Wald, Wilson score, and Exact methods.
   \item Simulates confidence intervals for the specified sample sizes.
   \item Calculates assurance probability (percentage of simulations where the lower CI bound exceeds \code{p0}) and
         coverage probability (percentage of simulations where the true proportion lies within the CI).
