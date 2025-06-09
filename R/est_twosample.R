@@ -224,7 +224,7 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
       EAPw = mean(ci_data$ml_w > delta) * 100,
       ECPw = mean(ci_data$ml_w < pd & ci_data$mu_w > pd) * 100,
       EAPs = mean(ci_data$ml_s > delta) * 100,
-      ECPs = mean(ci_data$ml_s < pd & ci_data$mu_s > pd) * 100
+      ECPs = mean(ci_data$ml_s < pd & ci_data$mu_s > pd) * 100，
       EAPe = mean(ci_data$ml_e > delta) * 100,
       ECPe = mean(ci_data$ml_e < pd & ci_data$mu_e > pd) * 100
     )
