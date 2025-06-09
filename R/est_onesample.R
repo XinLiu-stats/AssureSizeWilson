@@ -181,7 +181,7 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
     CPs <- round(mean(data$l2 < p & data$u2 > p, na.rm = TRUE) * 100, 2)
     CPe <- round(mean(data$l3 < p & data$u3 > p, na.rm = TRUE) * 100, 2)
     
-    return(c(EAPw = EAPw, EAPs = EAPs, CPw = CPw, CPs = CPs))
+    return(c(EAPw = EAPw, EAPs = EAPs, EAPe = EAPe, ECPw = ECPw, ECPs = ECPs, ECPe = ECPe))
   }
 
   # Generate parameter grid
