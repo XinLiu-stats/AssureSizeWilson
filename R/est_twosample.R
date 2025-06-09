@@ -245,7 +245,7 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
       simulate_ci(row$p1, row$p2, alpha,
                   sample_sizes$n1_w, sample_sizes$n2_w,
                   sample_sizes$n1_s, sample_sizes$n2_s,
-                 sample_sizes$n1_e, sample_sizes$n2_e,)
+                 sample_sizes$n1_e, sample_sizes$n2_e)
     }
     stopCluster(cl)
 
