@@ -179,9 +179,9 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
     EAPw <- round(mean(data$l1 > p0, na.rm = TRUE) * 100, 2)
     EAPs <- round(mean(data$l2 > p0, na.rm = TRUE) * 100, 2)
     EAPe <- round(mean(data$l3 > p0, na.rm = TRUE) * 100, 2)
-    CPw <- round(mean(data$l1 < p & data$u1 > p, na.rm = TRUE) * 100, 2)
-    CPs <- round(mean(data$l2 < p & data$u2 > p, na.rm = TRUE) * 100, 2)
-    CPe <- round(mean(data$l3 < p & data$u3 > p, na.rm = TRUE) * 100, 2)
+    ECPw <- round(mean(data$l1 < p & data$u1 > p, na.rm = TRUE) * 100, 2)
+    ECPs <- round(mean(data$l2 < p & data$u2 > p, na.rm = TRUE) * 100, 2)
+    ECPe <- round(mean(data$l3 < p & data$u3 > p, na.rm = TRUE) * 100, 2)
     
     return(c(EAPw = EAPw, EAPs = EAPs, EAPe = EAPe, ECPw = ECPw, ECPs = ECPs, ECPe = ECPe))
   }
