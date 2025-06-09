@@ -1,8 +1,8 @@
 #' @title Sample Size Estimation for a Single Proportion
 #'
 #' @description
-#' This function estimates the sample size required to ensure the lower bound of a confidence interval for a single proportion is no less than a specified threshold, with a desired level of assurance, using the Wald and Wilson score methods.
-#' It evaluates empirical assurance probabilities and confidence interval (CI) coverage probabilities through simulations.
+#' This function estimates the sample size required to ensure the lower bound of a confidence interval for a single proportion is no less than a specified threshold, with a desired level of assurance, using the Wald, Wilson score, and Exact methods.
+#' It evaluates empirical assurance probabilities and empirical coverage probabilities through simulations.
 #'
 #' @param p Numeric. The true population proportion to be estimated. Must be in the range (0, 1).
 #' @param p0 Numeric. The threshold proportion for evaluating the lower bound of the CI. Must be in the range (0, 1).
@@ -14,7 +14,7 @@
 #' This function estimates sample sizes using the Wald and Wilson score methods. It simulates binomial data to construct confidence intervals
 #' and evaluates empirical assurance probabilities and coverage probabilities through the following steps:
 #' \enumerate{
-#'   \item Computes sample sizes using both the Wald and Wilson score methods.
+#'   \item Computes sample sizes using the Wald, Wilson score, and Exact methods.
 #'   \item Simulates confidence intervals for the specified sample sizes.
 #'   \item Calculates assurance probability (percentage of simulations where the lower CI bound exceeds \code{p0}) and
 #'         coverage probability (percentage of simulations where the true proportion lies within the CI).
@@ -31,8 +31,10 @@
 #'   \item \code{Ns}: Sample size estimated using the Wilson score method.
 #'   \item \code{EAPw}: Empirical assurance probability for the Wald method (%).
 #'   \item \code{EAPs}: Empirical assurance probability for the Wilson score method (%).
-#'   \item \code{CPw}: CI coverage probability for the Wald method (%).
-#'   \item \code{CPs}: CI coverage probability for the Wilson score method (%).
+#'   \item \code{EAPe}: Empirical assurance probability for the Exact method (%).
+#'   \item \code{ECPw}: Empirical coverage probability for the Wald method (%).
+#'   \item \code{ECPs}: Empirical coverage probability for the Wilson score method (%).
+#'   \item \code{ECPe}: Empirical coverage probability for the Exact method (%).
 #' }
 #'
 #' @examples
