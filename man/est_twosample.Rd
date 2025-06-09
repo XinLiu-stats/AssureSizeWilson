@@ -32,8 +32,8 @@ est_twosample(p1, p2, delta, r, alpha = 0.05, assurance = 0.8, rep)
     \item{\code{ECPw}}{Empirical coverage probability (true difference within CI) using the Wald method (percentage).}
     \item{\code{EAPs}}{Empirical assurance probability using the Wilson score method (percentage).}
     \item{\code{ECPs}}{Empirical coverage probability using the Wilson score method (percentage).}
-    \item{\code{EAPs}}{Empirical assurance probability using the Exact method (percentage).}
-    \item{\code{ECPs}}{Empirical coverage probability using the Exact method (percentage).}
+    \item{\code{EAPe}}{Empirical assurance probability using the Exact method (percentage).}
+    \item{\code{ECPe}}{Empirical coverage probability using the Exact method (percentage).}
   }
 }
 \description{
