@@ -27,15 +27,18 @@ est_twosample(p1, p2, delta, r, alpha = 0.05, assurance = 0.8, rep)
   \describe{
     \item{\code{n1_w, n2_w}}{Required sample sizes for group 1 and group 2 using the Wald method.}
     \item{\code{n1_s, n2_s}}{Required sample sizes for group 1 and group 2 using the Wilson score method.}
+    \item{\code{n1_e, n2_e}}{Required sample sizes for group 1 and group 2 using the Exact method.}
     \item{\code{EAPw}}{Empirical assurance probability (lower limit \(\geq\) \code{delta}) using the Wald method (percentage).}
     \item{\code{ECPw}}{Empirical coverage probability (true difference within CI) using the Wald method (percentage).}
     \item{\code{EAPs}}{Empirical assurance probability using the Wilson score method (percentage).}
     \item{\code{ECPs}}{Empirical coverage probability using the Wilson score method (percentage).}
+    \item{\code{EAPs}}{Empirical assurance probability using the Exact method (percentage).}
+    \item{\code{ECPs}}{Empirical coverage probability using the Exact method (percentage).}
   }
 }
 \description{
   This function estimates the required sample sizes for comparing two independent proportions
-  based on the Wald and Wilson score methods. It evaluates sample size performance
+  based on the Wald, Wilson score, and Exact methods. It evaluates sample size performance
   using simulations to calculate empirical assurance probabilities and coverage probabilities.
 }
 \details{
