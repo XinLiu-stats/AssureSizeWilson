@@ -103,17 +103,19 @@ est_twosample(p1, p2, delta, r = 1, alpha = 0.05, assurance = 0.8, rep = 10000)
 
 #### Input
 
-`p1`: Numeric. The input `p1`.
+`p1`: The input `p1`.
 
-`p2`: Numeric. The input `p2`.
+`p2`: The input `p2`.
 
-`delta`: Numeric. The input `delta`.
+`delta`: The input `delta`.
 
-`r`: Numeric. The input `r`.
+`r`: The input `r`.
 
 `alpha`: The input `alpha`.
 
-`assurance`: Numeric. The input `assurance`.
+`assurance`: The input `assurance`.
+
+`rep`: The input `rep`.
 
 #### Output
 
