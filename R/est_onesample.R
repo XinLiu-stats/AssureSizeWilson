@@ -85,13 +85,67 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
     # Wilson score method
     Ns <- ceiling((z1 + z2)^2 * p * (1 - p) / d^2 + z1 * (z1 + z2) * (2 * p - 1) / d - z1^2)
 
-    return(c(Nw = Nw, Ns = Ns))
+    # Exact method
+    exact_sample <- function(p, p0, alpha = 0.05, assurance = 0.8,
+                         n_range = 10:1000, plot = TRUE) {
+  # Quantiles for CI and assurance
+  z1 <- qnorm(1 - alpha / 2)
+  z2 <- qnorm(assurance)
+
+  # Left-hand side (target standardized squared distance)
+  lhs <- (p - p0)^2 / (z1 + z2)^2
+
+  # Right-hand side for each candidate sample size (using beta approximation)
+  rhs_values <- sapply(n_range, function(n) {
+    k <- n * p
+    ci_lower <- qbeta(alpha / 2, k, n - k + 1)
+    (p - ci_lower)^2 / z1^2
+  })
+
+  # Find the closest intersection point
+  intersection_idx <- which.min(abs(rhs_values - lhs))
+  n_intersect <- n_range[intersection_idx]
+  rhs_intersect <- rhs_values[intersection_idx]
+
+  # Plot results if required
+  if (plot) {
+    plot(n_range, rhs_values, type = "l", lwd = 2, col = "blue",
+         ylab = "RHS", xlab = "Sample Size (n)",
+         main = "RHS vs. Sample Size with LHS Reference")
+    abline(h = lhs, col = "red", lty = 2, lwd = 2)
+    points(n_intersect, rhs_intersect, pch = 19, col = "darkgreen")
+    text(n_intersect, rhs_intersect,
+         labels = paste0("n = ", n_intersect),
+         pos = 3, col = "darkgreen")
+    legend("topright", legend = c("RHS", "LHS", "Intersection"),
+           col = c("blue", "red", "darkgreen"),
+           lty = c(1, 2, NA), pch = c(NA, NA, 19), lwd = 2)
+  }
+
+  return(list(
+    estimated_sample_size = n_intersect,
+    lhs = lhs,
+    rhs_at_n = rhs_intersect
+  ))
+}
+
+    h<-exact_sample(p = p,
+                    p0 = p0,
+                    alpha = alpha,
+                    assurance = beta,
+                    n_range = 10:10000,
+                    plot = FALSE)
+    
+    Ne <- h$estimated_sample_size
+    
+    return(c(Nw = Nw, Ns = Ns, Ne = Ne))
   }
 
   # Function to simulate confidence intervals
   simulate_confidence_intervals <- function(p, N, alpha) {
     Nw <- N["Nw"]
     Ns <- N["Ns"]
+    Ne <- N["Ne"]
 
     # Wald method
     x1 <- rbinom(Nw, 1, p)
@@ -108,19 +162,25 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
     l2 <- (-b - sqrt(b^2 - 4 * a * c)) / (2 * a)
     u2 <- (-b + sqrt(b^2 - 4 * a * c)) / (2 * a)
 
-    return(c(l1 = l1, l2 = l2, u1 = u1, u2 = u2))
+    # Exact method
+    x3 <- rbinom(Ne, 1, p)
+    l3 <- qbeta(alpha / 2, x3, Ne - x3 + 1)
+    u3 <- qbeta(1- alpha/2, x3 + 1, Ne - x3 )
+    return(c(l1 = l1, l2 = l2, l3 = l3, u1 = u1, u2 = u2, u3 = u3))
   }
 
   # Function to calculate assurance probabilities
   calculate_assurance <- function(p, p0, ci) {
     data <- as.data.frame(ci)
-    colnames(data) <- c("l1", "l2", "u1", "u2")
+    colnames(data) <- c("l1", "l2", "l3", "u1", "u2", "u3")
 
     EAPw <- round(mean(data$l1 > p0, na.rm = TRUE) * 100, 2)
     EAPs <- round(mean(data$l2 > p0, na.rm = TRUE) * 100, 2)
+    EAPe <- round(mean(data$l3 > p0, na.rm = TRUE) * 100, 2)
     CPw <- round(mean(data$l1 < p & data$u1 > p, na.rm = TRUE) * 100, 2)
     CPs <- round(mean(data$l2 < p & data$u2 > p, na.rm = TRUE) * 100, 2)
-
+    CPe <- round(mean(data$l3 < p & data$u3 > p, na.rm = TRUE) * 100, 2)
+    
     return(c(EAPw = EAPw, EAPs = EAPs, CPw = CPw, CPs = CPs))
   }
 
@@ -155,7 +215,7 @@ est_onesample <- function(p, p0, alpha, assurance, rep) {
 
   # Combine all results into a single data frame
   results_df <- do.call(rbind, results)
-  colnames(results_df) <- c("p0", "p", "assurance", "Nw", "Ns", "EAPw", "EAPs", "CPw", "CPs")
+  colnames(results_df) <- c("p0", "p", "assurance", "Nw", "Ns", "Ne", "EAPw", "EAPs", "EAPe", "ECPw", "ECPs", "ECPe")
 
   return(as.data.frame(results_df))
 }
