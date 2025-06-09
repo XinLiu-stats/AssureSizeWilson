@@ -29,6 +29,7 @@
 #'   \item \code{assurance}: The desired assurance probability.
 #'   \item \code{Nw}: Sample size estimated using the Wald method.
 #'   \item \code{Ns}: Sample size estimated using the Wilson score method.
+#'   \item \code{Ne}: Sample size estimated using the Exact method.
 #'   \item \code{EAPw}: Empirical assurance probability for the Wald method (%).
 #'   \item \code{EAPs}: Empirical assurance probability for the Wilson score method (%).
 #'   \item \code{EAPe}: Empirical assurance probability for the Exact method (%).
