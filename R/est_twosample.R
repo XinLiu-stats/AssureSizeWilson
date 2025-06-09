@@ -98,21 +98,86 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
                             z_alpha = z_alpha, z_assurance = z_assurance, r = r)$root)
     n1_s <- ceiling(r * n2_s)
 
-    return(data.frame(n1_w, n2_w, n1_s, n2_s))
+    # Exact method
+    exact_twosample <- function(p1, p2, delta, r,
+                            alpha = 0.05,
+                            assurance = 0.8,
+                            n_range = 10:1000,
+                            plot = TRUE) {
+  # Quantiles for CI and assurance
+  z1 <- qnorm(1 - alpha / 2)
+  z2 <- qnorm(assurance)
+
+  # Left-hand side: theoretical standardized squared distance
+  lhs <- (p1 - p2 - delta)^2 / (z1 + z2)^2
+
+  # Right-hand side: squared distance using lower/upper limits of CI
+  rhs_values <- sapply(n_range, function(n) {
+    n1 <- r * n
+    n2 <- n
+    k1 <- n1 * p1
+    k2 <- n2 * p2
+
+    ci_lower1 <- qbeta(alpha / 2, k1, n1 - k1 + 1)
+    ci_upper2 <- qbeta(1 - alpha / 2, k2 + 1, n2 - k2)
+
+    (p1 - ci_lower1)^2 / z1^2 + (ci_upper2 - p2)^2 / z1^2
+  })
+
+  # Identify the closest intersection point
+  intersection_idx <- which.min(abs(rhs_values - lhs))
+  n_intersect <- n_range[intersection_idx]
+  rhs_intersect <- rhs_values[intersection_idx]
+
+  # Optional plot
+  if (plot) {
+    plot(n_range, rhs_values, type = "l", lwd = 2, col = "blue",
+         ylab = "RHS", xlab = "Sample Size (n)",
+         main = "RHS vs. Sample Size with LHS Reference Line")
+    abline(h = lhs, col = "red", lty = 2, lwd = 2)
+    points(n_intersect, rhs_intersect, pch = 19, col = "darkgreen")
+    text(n_intersect, rhs_intersect,
+         labels = paste0("n = ", n_intersect),
+         pos = 3, col = "darkgreen")
+    legend("topright", legend = c("RHS", "LHS", "Intersection"),
+           col = c("blue", "red", "darkgreen"),
+           lty = c(1, 2, NA), pch = c(NA, NA, 19), lwd = 2)
   }
 
+  return(list(
+    estimated_sample_size = n_intersect,
+    lhs = lhs,
+    rhs_at_n = rhs_intersect
+  ))
+}
+
+    h<-exact_twosample(p1 = p1,
+                       p2 = p2,
+                       delta = delta,
+                       r = r,
+                       alpha = alpha,
+                       assurance = assurance,
+                       n_range = 10:10000,
+                       plot = FALSE)
+    n2_e <- h$estimated_sample_size
+    n1_e <- ceiling(r*n2_e)
+ 
+    return(data.frame(n1_w, n2_w, n1_s, n2_s, n1_e, n2_e))
+  }
+  
+
   # Simulate confidence intervals
-  simulate_ci <- function(p1, p2, alpha, n1, n2, n1_s, n2_s) {
+  simulate_ci <- function(p1, p2, alpha, n1_w, n2_w, n1_s, n2_s, n1_e, n2_e) {
     z_alpha <- qnorm(1 - alpha / 2)
     pd <- p1 - p2
 
     # Wald method
-    x1 <- rbinom(n1, 1, p1)
-    x2 <- rbinom(n2, 1, p2)
+    x1 <- rbinom(n1_w, 1, p1)
+    x2 <- rbinom(n2_w, 1, p2)
     p1_hat <- mean(x1)
     p2_hat <- mean(x2)
-    ml_w <- p1_hat - p2_hat - z_alpha * sqrt(p1_hat * (1 - p1_hat) / n1 + p2_hat * (1 - p2_hat) / n2)
-    mu_w <- p1_hat - p2_hat + z_alpha * sqrt(p1_hat * (1 - p1_hat) / n1 + p2_hat * (1 - p2_hat) / n2)
+    ml_w <- p1_hat - p2_hat - z_alpha * sqrt(p1_hat * (1 - p1_hat) / n1_w + p2_hat * (1 - p2_hat) / n2_w)
+    mu_w <- p1_hat - p2_hat + z_alpha * sqrt(p1_hat * (1 - p1_hat) / n1_w + p2_hat * (1 - p2_hat) / n2_w)
 
     # Wilson method
     x1_s <- rbinom(n1_s, 1, p1)
@@ -120,7 +185,7 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
     p1_hat_s <- mean(x1_s)
     p2_hat_s <- mean(x2_s)
 
-    # Wilson score limits
+    # Wilson score method
     l1 <- (2 * n1_s * p1_hat_s + z_alpha^2 - z_alpha * sqrt(z_alpha^2 + 4 * n1_s * p1_hat_s * (1 - p1_hat_s))) /
       (2 * (n1_s + z_alpha^2))
     u1 <- (2 * n1_s * p1_hat_s + z_alpha^2 + z_alpha * sqrt(z_alpha^2 + 4 * n1_s * p1_hat_s * (1 - p1_hat_s))) /
@@ -134,7 +199,22 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
     ml_s <- p1_hat_s - p2_hat_s - sqrt((p1_hat_s - l1)^2 + (u2 - p2_hat_s)^2)
     mu_s <- p1_hat_s - p2_hat_s + sqrt((u1 - p1_hat_s)^2 + (p2_hat_s - l2)^2)
 
-    return(data.frame(ml_w, mu_w, ml_s, mu_s))
+    # Exact method
+    x1_e <- rbinom(n1_e, 1, p1)
+    x2_e <- rbinom(n2_e, 1, p2)
+    p1_hat_e = mean(x1_e)
+    p2_hat_e = mean(x2_e)
+    k1_e = sum(x1_e)
+    k2_e = sum(x2_e)
+    l1_e = qbeta(alpha/2, k1_e, n1_e-k1_e+1)
+    u1_e = qbeta(1-alpha/2, k1_e+1, n1_e-k1_e)
+    l2_e = qbeta(alpha/2, k2_e, n2_e-k2_e+1)
+    u2_e = qbeta(1-alpha/2, k2_e+1, n2_e-k2_e)
+
+    ml_e <- p1_hat_e - p2_hat_e - sqrt((p1_hat_e - l1_e)^2 + (u2_e - p2_hat_e)^2)
+    mu_e <- p1_hat_e - p2_hat_e + sqrt((u1_e - p1_hat_e)^2 + (p2_hat_e - l2_e)^2)
+    
+    return(data.frame(ml_w, mu_w, ml_s, mu_s, ml_e, mu_e))
   }
 
   # Summarize simulation results
@@ -145,6 +225,8 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
       ECPw = mean(ci_data$ml_w < pd & ci_data$mu_w > pd) * 100,
       EAPs = mean(ci_data$ml_s > delta) * 100,
       ECPs = mean(ci_data$ml_s < pd & ci_data$mu_s > pd) * 100
+      EAPe = mean(ci_data$ml_e > delta) * 100,
+      ECPe = mean(ci_data$ml_e < pd & ci_data$mu_e > pd) * 100
     )
     return(results)
   }
@@ -162,7 +244,8 @@ est_twosample <- function(p1, p2, delta, r, alpha, assurance, rep) {
     ci_data <- foreach(j = seq_len(rep), .combine = rbind) %dopar% {
       simulate_ci(row$p1, row$p2, alpha,
                   sample_sizes$n1_w, sample_sizes$n2_w,
-                  sample_sizes$n1_s, sample_sizes$n2_s)
+                  sample_sizes$n1_s, sample_sizes$n2_s,
+                 sample_sizes$n1_e, sample_sizes$n2_e,)
     }
     stopCluster(cl)
 
