@@ -4,7 +4,7 @@
 #' This function estimates the sample sizes required for comparing two independent proportions
 #' (\code{p1} and \code{p2}) to ensure the lower limit of a confidence interval for their
 #' difference is no less than a specified threshold (\code{delta}), with a desired assurance probability.
-#' The sample sizes are calculated using the Wald and Wilson score methods, and simulations
+#' The sample sizes are calculated using the Wald, Wilson score, and Exact methods, and simulations
 #' are performed to evaluate empirical assurance and coverage probabilities.
 #'
 #' @param p1 Numeric. True proportion in group 1 (e.g., experimental group).
@@ -19,10 +19,13 @@
 #' \describe{
 #'   \item{\code{n1_w, n2_w}}{Required sample sizes for group 1 and group 2 using the Wald method.}
 #'   \item{\code{n1_s, n2_s}}{Required sample sizes for group 1 and group 2 using the Wilson score method.}
+#'   \item{\code{n1_e, n2_e}}{Required sample sizes for group 1 and group 2 using the Exact method.}
 #'   \item{\code{EAPw}}{Empirical assurance probability (lower limit ≥ \code{delta}) using the Wald method (%).}
 #'   \item{\code{ECPw}}{Empirical coverage probability (true difference within CI) using the Wald method (%).}
 #'   \item{\code{EAPs}}{Empirical assurance probability using the Wilson score method (%).}
 #'   \item{\code{ECPs}}{Empirical coverage probability using the Wilson score method (%).}
+#'   \item{\code{EAPe}}{Empirical assurance probability using the Exact method (%).}
+#'   \item{\code{ECPe}}{Empirical coverage probability using the Exact method (%).}
 #' }
 #'
 #' @details
