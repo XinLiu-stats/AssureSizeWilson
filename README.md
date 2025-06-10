@@ -93,11 +93,11 @@ est_twosample(p1, p2, delta, r = 1, alpha = 0.05, assurance = 0.8, rep = 10000)
 
  To ensure clinical relevance and regulatory compliance, the selection of δ should follow the guidance below:
  
- - **General method**
+ - **General method:**
  Combine clinical judgment, historical data, and statistical reasoning, tailored to the primary endpoint. For Non-Inferiority Trials, the δ based on the standard treatment’s effect from historical placebo-controlled trials (M₁), ensuring δ does not exceed M₁, and adjust to a more conservative margin (M₂) via clinical judgment.
- - **Regulatory Guidance**
+ - **Regulatory Guidance:**
   When available, follow regulatory recommendations. Example: FDA proposed some noninferiority margins for some clinical endpoints (binary responses) such as cure rate for anti-infective drug products (e.g., topical antifungals or vaginal antifungals).
- - **No Prior Data**
+ - **No Prior Data:**
  In the absence of prior evidence, a standard effect size (i.e., effect size adjusted for standard deviation) between 0.25 and 0.5 is usually chosen as δ.
 
 `r`: Numeric. Sample size allocation ratio (n1 / n2) between group 1 and group 2.
